@@ -14,84 +14,72 @@ body {
 }
 
 body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(6px);
-  z-index: 0;
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  backdrop-filter:blur(6px);
 }
 
 .container {
   max-width: 900px;
   margin: 20px auto;
   padding: 10px;
-  position: relative;
-  z-index: 1;
   background: rgba(0,0,0,0.6);
   border-radius: 16px;
+  position: relative;
 }
 
 .header {
-  text-align: center;
-  background: rgba(20,20,20,0.8);
-  padding: 10px;
-  border-radius: 12px;
+  text-align:center;
 }
 
 .main {
-  display: flex;
+  display:flex;
 }
 
 .left {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
 #cookieImg {
-  width: 250px;
-  cursor: pointer;
-  transition: 0.1s;
+  width:250px;
+  cursor:pointer;
+  transition:0.1s;
 }
 
 #cookieImg:active {
-  transform: scale(0.9);
+  transform:scale(0.9);
 }
 
 .right {
-  width: 280px;
+  width:280px;
 }
 
 .right button {
-  width: 100%;
-  margin: 5px 0;
-  padding: 12px;
-  background: #333;
-  color: white;
-  border: none;
-  border-radius: 10px;
+  width:100%;
+  margin:5px 0;
+  padding:10px;
 }
 
 .number-pop {
-  position: fixed;
-  color: gold;
-  font-weight: bold;
-  animation: pop 0.8s forwards;
+  position:fixed;
+  color:gold;
+  animation:pop 0.8s forwards;
 }
-
 @keyframes pop {
-  to { transform: translateY(-50px); opacity: 0; }
+  to { transform:translateY(-50px); opacity:0; }
 }
 
 .combo {
-  position: fixed;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  color: red;
-  font-size: 24px;
+  position:fixed;
+  top:20%;
+  left:50%;
+  transform:translateX(-50%);
+  color:red;
 }
 </style>
 </head>
@@ -99,10 +87,10 @@ body::before {
 <body>
 
 <div class="container">
-
   <div class="header">
     <h2><span id="cookies">0</span> 大地</h2>
     <p>毎秒: <span id="cps">0</span></p>
+    <p>倍率: x<span id="multiplier">1</span></p>
   </div>
 
   <div class="main">
@@ -115,59 +103,67 @@ body::before {
       <button onclick="buy('grandma',5,1.25)">ごとひなた <span id="cost_grandma"></span></button>
       <button onclick="buy('factory',20,1.3)">工場 <span id="cost_factory"></span></button>
       <button onclick="buy('click',1,1.5)">クリック強化 <span id="cost_click"></span></button>
+
+      <hr>
+      <button id="rebirthBtn">転生（1000）</button>
     </div>
   </div>
-
 </div>
 
 <script>
-const CLICK_SOUND_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%82%EF%BD%9E%EF%BC%81.mp3";
-const BGM_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%94%E3%81%A8%E3%81%86%E3%81%A0%E3%81%84%E3%81%A1%E3%81%AE%E9%83%A8%E5%B1%8B%20(1).mp3";
-
-const bgm = new Audio(BGM_URL);
-bgm.loop = true;
-bgm.volume = 0.2;
-
-let bgmStarted = false;
-
-let data = {
+// ===== セーブ読み込み =====
+let data = JSON.parse(localStorage.getItem("save")) || {
   cookies: 0,
   cps: 0,
   clickPower: 1,
-  costs: { cursor: 10, grandma: 50, factory: 200, click: 100 }
+  multiplier: 1,
+  costs: { cursor:10, grandma:50, factory:200, click:100 }
 };
 
+// ===== 要素 =====
 const cookieImg = document.getElementById("cookieImg");
 const cookiesEl = document.getElementById("cookies");
 const cpsEl = document.getElementById("cps");
+const multiplierEl = document.getElementById("multiplier");
+const rebirthBtn = document.getElementById("rebirthBtn");
 
 const costCursorEl = document.getElementById("cost_cursor");
 const costGrandmaEl = document.getElementById("cost_grandma");
 const costFactoryEl = document.getElementById("cost_factory");
 const costClickEl = document.getElementById("cost_click");
 
+// ===== 音 =====
+const bgm = new Audio("https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%94%E3%81%A8%E3%81%86%E3%81%A0%E3%81%84%E3%81%A1%E3%81%AE%E9%83%A8%E5%B1%8B%20(1).mp3");
+bgm.loop = true;
+bgm.volume = 0.2;
+
+let started = false;
+
+// ===== UI更新 =====
+function updateUI(){
+  cookiesEl.textContent = Math.floor(data.cookies);
+  cpsEl.textContent = data.cps;
+  multiplierEl.textContent = data.multiplier;
+
+  costCursorEl.textContent = data.costs.cursor;
+  costGrandmaEl.textContent = data.costs.grandma;
+  costFactoryEl.textContent = data.costs.factory;
+  costClickEl.textContent = data.costs.click;
+}
+
+// ===== セーブ =====
+setInterval(()=>{
+  localStorage.setItem("save", JSON.stringify(data));
+},3000);
+
+// ===== コンボ =====
 let combo = 0;
 let comboTimer;
 const comboEl = document.createElement("div");
 comboEl.className = "combo";
 document.body.appendChild(comboEl);
 
-function playClick(){
-  const s=new Audio(CLICK_SOUND_URL);
-  s.volume=0.3;
-  s.play();
-}
-
-function updateUI(){
-  cookiesEl.textContent=Math.floor(data.cookies);
-  cpsEl.textContent=data.cps;
-
-  costCursorEl.textContent=data.costs.cursor;
-  costGrandmaEl.textContent=data.costs.grandma;
-  costFactoryEl.textContent=data.costs.factory;
-  costClickEl.textContent=data.costs.click;
-}
-
+// ===== ポップ =====
 function pop(x,y,val){
   const el=document.createElement("div");
   el.className="number-pop";
@@ -178,9 +174,10 @@ function pop(x,y,val){
   setTimeout(()=>el.remove(),800);
 }
 
-cookieImg.onclick=(e)=>{
+// ===== クリック =====
+cookieImg.onclick = (e)=>{
   combo++;
-  comboEl.textContent=combo+" COMBO";
+  comboEl.textContent = combo + " COMBO";
 
   clearTimeout(comboTimer);
   comboTimer=setTimeout(()=>{
@@ -188,39 +185,57 @@ cookieImg.onclick=(e)=>{
     comboEl.textContent="";
   },1500);
 
-  const gain=Math.floor(data.clickPower*(1+combo*0.1));
-  data.cookies+=gain;
+  const gain = Math.floor(data.clickPower * data.multiplier * (1+combo*0.1));
+  data.cookies += gain;
 
   pop(e.clientX,e.clientY,gain);
 
-  if(!bgmStarted){
+  if(!started){
     bgm.play();
-    bgmStarted=true;
+    started=true;
   }
 
-  playClick();
   updateUI();
 };
 
-window.buy=function(type,gain,rate){
-  let cost=data.costs[type];
+// ===== 購入 =====
+window.buy = function(type,gain,rate){
+  let cost = data.costs[type];
 
-  if(data.cookies>=cost){
-    data.cookies-=cost;
+  if(data.cookies >= cost){
+    data.cookies -= cost;
 
-    if(type==="click"){data.clickPower+=gain;}
-    else{data.cps+=gain;}
+    if(type==="click") data.clickPower += gain;
+    else data.cps += gain;
 
-    data.costs[type]=Math.floor(cost*rate);
+    data.costs[type] = Math.floor(cost * rate);
     updateUI();
   }
 };
 
+// ===== 転生 =====
+rebirthBtn.onclick = ()=>{
+  if(data.cookies < 1000){
+    alert("足りない！");
+    return;
+  }
+
+  data.multiplier += 1;
+  data.cookies = 0;
+  data.cps = 0;
+  data.clickPower = 1;
+
+  alert("転生！倍率アップ！");
+  updateUI();
+};
+
+// ===== 自動収入 =====
 setInterval(()=>{
-  data.cookies+=data.cps/10;
+  data.cookies += (data.cps * data.multiplier)/10;
   updateUI();
 },100);
 
+// 初期化
 updateUI();
 </script>
 
