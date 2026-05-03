@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>大地クリッカー</title>
+
+<style>
+body {
+  margin: 0;
+  background: url("https://i.imgur.com/o2WgAe5.png") no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+}
+
+.main {
+  display: flex;
+}
+
+.left {
+  flex: 1;
+  text-align: center;
+}
+
+#cookieImg {
+  width: 250px;
+  cursor: pointer;
+}
+
+.right {
+  width: 250px;
+}
+
+.number-pop {
+  position: fixed;
+  color: gold;
+  font-weight: bold;
+  animation: pop 0.8s forwards;
+}
+
+@keyframes pop {
+  to { transform: translateY(-50px); opacity: 0; }
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+  <h2><span id="cookies">0</span> 大地</h2>
+  <p>毎秒: <span id="cps">0</span></p>
+
+  <div class="main">
+    <div class="left">
+      <img id="cookieImg" src="https://i.imgur.com/lIClgEd.png">
+    </div>
+
+    <div class="right">
+      <button onclick="buy('cursor',1,1.2)">カーソル <span id="cost_cursor"></span></button>
+      <button onclick="buy('grandma',5,1.25)">ごとひなた <span id="cost_grandma"></span></button>
+      <button onclick="buy('factory',20,1.3)">工場 <span id="cost_factory"></span></button>
+      <button onclick="buy('click',1,1.5)">クリック強化 <span id="cost_click"></span></button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ===== 設定 =====
+const CLICK_SOUND_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%82%EF%BD%9E%EF%BC%81.mp3";
+const BGM_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%94%E3%81%A8%E3%81%86%E3%81%A0%E3%81%84%E3%81%A1%E3%81%AE%E9%83%A8%E5%B1%8B%20(1).mp3";
+
+let data = {
+  cookies: 0,
+  cps: 0,
+  clickPower: 1,
+  costs: { cursor: 10, grandma: 50, factory: 200, click: 100 }
+};
+
+const cookieImg = document.getElementById("cookieImg");
+const cookiesEl = document.getElementById("cookies");
+const cpsEl = document.getElementById("cps");
+
+function updateUI(){
+  cookiesEl.textContent = Math.floor(data.cookies);
+  cpsEl.textContent = data.cps;
+}
+
+cookieImg.onclick = () => {
+  data.cookies += data.clickPower;
+  updateUI();
+};
+
+window.buy = function(type,gain,rate){
+  let cost = data.costs[type];
+  if(data.cookies >= cost){
+    data.cookies -= cost;
+    data.cps += gain;
+    data.costs[type] = Math.floor(cost * rate);
+    updateUI();
+  }
+};
+
+setInterval(()=>{
+  data.cookies += data.cps / 10;
+  updateUI();
+},100);
+
+updateUI();
+</script>
+
+</body>
+</html>
