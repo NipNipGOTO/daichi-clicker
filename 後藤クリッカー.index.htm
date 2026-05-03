@@ -5,7 +5,7 @@
 <title>大地クリッカー</title>
 
 <style>
-/* body {
+body {
   margin: 0;
   background: url("https://i.imgur.com/o2WgAe5.png") no-repeat center center fixed;
   background-size: cover;
@@ -13,402 +13,106 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* 背景オーバーレイ */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(6px);
-  z-index: 0;
-}
-
-/* 全体 */
 .container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
   max-width: 900px;
   margin: 20px auto;
-  padding: 10px;
-  position: relative;
-  z-index: 1;
-  background: rgba(0,0,0,0.6);
-  border-radius: 16px;
-  box-shadow: 0 0 30px rgba(0,0,0,0.7);
 }
 
-/* ヘッダー */
-.header {
-  text-align: center;
-  padding: 10px;
-  background: rgba(20,20,20,0.8);
-  border-radius: 12px;
-  margin-bottom: 10px;
-  backdrop-filter: blur(10px);
-}
-
-/* 数字強調 */
-h2 {
-  font-size: 32px;
-  font-weight: bold;
-}
-
-p {
-  opacity: 0.8;
-}
-
-/* メイン */
 .main {
   display: flex;
-  flex: 1;
 }
 
-/* 左 */
 .left {
   flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  text-align: center;
 }
 
-/* クッキー */
 #cookieImg {
   width: 250px;
   cursor: pointer;
-  transition: transform 0.1s;
-  touch-action: manipulation;
-  filter: drop-shadow(0 0 30px rgba(255,200,0,0.7));
 }
 
-#cookieImg:active {
-  transform: scale(0.9);
-}
-
-/* 右（カードUI） */
 .right {
-  width: 280px;
-  max-width: 100%;
-  background: rgba(20,20,20,0.8);
-  padding: 10px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  overflow-y: auto;
+  width: 250px;
 }
 
-/* ボタン（立体化） */
-.right button {
-  width: 100%;
-  margin: 5px 0;
-  padding: 12px;
-  background: linear-gradient(145deg, #333, #222);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.2s;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-}
-
-.right button:hover {
-  transform: translateY(-2px);
-  background: #444;
-}
-
-.right button:active {
-  transform: scale(0.95);
-}
-
-/* スクロールバー */
-.right::-webkit-scrollbar {
-  width: 6px;
-}
-
-/* 食べかす */
-.crumb {
+.number-pop {
   position: fixed;
-  pointer-events: none;
-  animation: crumbAnim 0.8s ease-out forwards;
-}
-
-@keyframes crumbAnim {
-  0% {
-    transform: translate(0,0) scale(1) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--x), var(--y)) scale(0.5) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-/* スマホ対応 */
-@media (max-width: 768px) {
-  .main {
-    flex-direction: column;
-  }
-
-  .left {
-    height: 40%;
-  }
-
-  .right {
-    width: 100%;
-    height: 60%;
-  }
-
-  #cookieImg {
-    width: 70%;
-  }
-
-  .right button {
-    font-size: 18px;
-    padding: 15px;
-  }
-  
-  .number-pop {
-  position: fixed;
-  pointer-events: none;
+  color: gold;
   font-weight: bold;
-  color: #ffd700;
-  font-size: 20px;
-  text-shadow: 0 0 10px rgba(255,200,0,0.8);
-  animation: popAnim 0.8s ease-out forwards;
+  animation: pop 0.8s forwards;
 }
 
-@keyframes popAnim {
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -120%) scale(1.5);
-    opacity: 0;
-  }
+@keyframes pop {
+  to { transform: translateY(-50px); opacity: 0; }
 }
-  
-  ← CSSここに貼る */
 </style>
 
 </head>
 <body>
 
-<!-- <div class="container">
+<div class="container">
 
-  <!-- 上：ステータス -->
-  <div class="header">
-    <h2><span id="cookies">0</span> 大地</h2>
-    <p>毎秒: <span id="cps">0</span></p>
-    <p>クリック: +<span id="clickPower">1</span></p>
-    <p>倍率: x<span id="multiplier">1</span></p>
-  </div>
+  <h2><span id="cookies">0</span> 大地</h2>
+  <p>毎秒: <span id="cps">0</span></p>
 
   <div class="main">
-
-    <!-- 左：クッキー -->
     <div class="left">
       <img id="cookieImg" src="https://i.imgur.com/lIClgEd.png">
     </div>
 
-    <!-- 右：ショップ -->
     <div class="right">
-      <h3>ショップ</h3>
-
-      <button onclick="buy('cursor',1,1.2)">
-        カーソル - <span id="cost_cursor"></span>
-      </button>
-
-      <button onclick="buy('grandma',5,1.25)">
-        ごとひなた - <span id="cost_grandma"></span>
-      </button>
-
-      <button onclick="buy('factory',20,1.3)">
-        大地工場 - <span id="cost_factory"></span>
-      </button>
-
-      <button onclick="buy('click',1,1.5)">
-        クリック強化 - <span id="cost_click"></span>
-      </button>
-
-      <h3>転生</h3>
-      <button id="rebirthBtn">転生（1000）</button>
+      <button onclick="buy('cursor',1,1.2)">カーソル <span id="cost_cursor"></span></button>
+      <button onclick="buy('grandma',5,1.25)">ごとひなた <span id="cost_grandma"></span></button>
+      <button onclick="buy('factory',20,1.3)">工場 <span id="cost_factory"></span></button>
+      <button onclick="buy('click',1,1.5)">クリック強化 <span id="cost_click"></span></button>
     </div>
 
   </div>
-</div>← HTMLここに貼る -->
+</div>
 
 <script>
-/* // ====== 自分のURLに差し替え ======
-const IMAGE_URL = "https://i.imgur.com/J4ytSla.png";
+// ===== 設定 =====
 const CLICK_SOUND_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%82%EF%BD%9E%EF%BC%81.mp3";
-const REBIRTH_SOUND_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%82%AC%E3%83%81%E5%88%87%E3%82%8C%E5%BE%8C%E8%97%A4.mp3";
 const BGM_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%94%E3%81%A8%E3%81%86%E3%81%A0%E3%81%84%E3%81%A1%E3%81%AE%E9%83%A8%E5%B1%8B%20(1).mp3";
-// ===============================
 
-// ===== 音量設定 =====
-const CLICK_VOLUME = 0.15;   // ←クリック音（ここ変えればOK）
-const BGM_VOLUME = 0.2;      // ←BGM
-const REBIRTH_VOLUME = 0.15;  // ←転生
-// ===================
-
-// データ
-let data = JSON.parse(localStorage.getItem("save")) || {
+let data = {
   cookies: 0,
   cps: 0,
   clickPower: 1,
-  multiplier: 1
+  costs: { cursor: 10, grandma: 50, factory: 200, click: 100 }
 };
 
-// 要素
+const cookieImg = document.getElementById("cookieImg");
 const cookiesEl = document.getElementById("cookies");
 const cpsEl = document.getElementById("cps");
-const clickPowerEl = document.getElementById("clickPower");
-const cookieImg = document.getElementById("cookieImg");
 
-const rebirthBtn = document.getElementById("rebirthBtn");
-const multiplierEl = document.getElementById("multiplier");
-
-const costCursorEl = document.getElementById("cost_cursor");
-const costGrandmaEl = document.getElementById("cost_grandma");
-const costFactoryEl = document.getElementById("cost_factory");
-const costClickEl = document.getElementById("cost_click");
-
-// ===== 音 =====
-const rebirthSound = new Audio(REBIRTH_SOUND_URL);
-rebirthSound.volume = REBIRTH_VOLUME;
-
-// 🎵 BGM
-const bgm = new Audio(BGM_URL);
-bgm.loop = true;
-bgm.volume = BGM_VOLUME;
-
-let bgmStarted = false;
-
-// 🔊 クリック音（毎回生成）
-function playClickSound() {
-  const s = new Audio(CLICK_SOUND_URL);
-  s.volume = CLICK_VOLUME;
-  s.play();
-}
-
-// UI更新
-function updateUI() {
+function updateUI(){
   cookiesEl.textContent = Math.floor(data.cookies);
   cpsEl.textContent = data.cps;
-  clickPowerEl.textContent = data.clickPower;
-  multiplierEl.textContent = data.multiplier;
-
-  costCursorEl.textContent = data.costs.cursor;
-  costGrandmaEl.textContent = data.costs.grandma;
-  costFactoryEl.textContent = data.costs.factory;
-  costClickEl.textContent = data.costs.click;
 }
 
-// セーブ
-setInterval(() => {
-  localStorage.setItem("save", JSON.stringify(data));
-}, 3000);
-
-// 食べかす
-function createCrumbs(x, y) {
-  for (let i = 0; i < 6; i++) {
-    const crumb = document.createElement("img");
-
-    crumb.src = IMAGE_URL;
-    crumb.className = "crumb";
-
-    crumb.style.width = (Math.random() * 40 + 20) + "px";
-    crumb.style.left = (x - 15) + "px";
-    crumb.style.top = (y - 15) + "px";
-
-    const randX = (Math.random() - 0.5) * 120 + "px";
-    const randY = (Math.random() - 0.5) * 120 + "px";
-
-    crumb.style.setProperty("--x", randX);
-    crumb.style.setProperty("--y", randY);
-
-    document.body.appendChild(crumb);
-    setTimeout(() => crumb.remove(), 800);
-  }
-}
-
-// 🎮 クリック
-cookieImg.onclick = (e) => {
-  data.cookies += data.clickPower * data.multiplier;
-
-  createCrumbs(e.clientX, e.clientY);
-
-  // 🎵 BGM開始（最初の1回）
-  if (!bgmStarted) {
-    bgm.play();
-    bgmStarted = true;
-  }
-
-  // 🔊 クリック音
-  playClickSound();
-
+cookieImg.onclick = () => {
+  data.cookies += data.clickPower;
   updateUI();
 };
 
-// 🔁 転生
-rebirthBtn.onclick = () => {
-  if (data.cookies < 1000) {
-    alert("クッキーが足りない！");
-    return;
-  }
-
-  rebirthSound.currentTime = 0;
-  rebirthSound.play();
-
-  data.multiplier += 1;
-  data.cookies = 0;
-  data.cps = 0;
-  data.clickPower = 1;
-
-  updateUI();
-
-  setTimeout(() => {
-    alert("転生！倍率アップ！");
-  }, 100);
-};
-
-// コスト
-data.costs = data.costs || {
-  cursor: 10,
-  grandma: 50,
-  factory: 200,
-  click: 100
-};
-
-// 購入
-function buy(type, gain, rate) {
+window.buy = function(type,gain,rate){
   let cost = data.costs[type];
-
-  if (data.cookies >= cost) {
+  if(data.cookies >= cost){
     data.cookies -= cost;
-
-    if (type === "click") {
-      data.clickPower += gain;
-    } else {
-      data.cps += gain;
-    }
-
+    data.cps += gain;
     data.costs[type] = Math.floor(cost * rate);
     updateUI();
   }
-}
+};
 
-
-
-// 自動収入
-setInterval(() => {
-  data.cookies += (data.cps * data.multiplier) / 10;
+setInterval(()=>{
+  data.cookies += data.cps / 10;
   updateUI();
-}, 100);
+},100);
 
-// 初期化
-updateUI();← JavaScriptここに貼る */
+updateUI();
 </script>
 
 </body>
