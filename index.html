@@ -27,16 +27,9 @@ body::before {
   padding: 10px;
   background: rgba(0,0,0,0.6);
   border-radius: 16px;
-  position: relative;
 }
 
-.header {
-  text-align:center;
-}
-
-.main {
-  display:flex;
-}
+.main { display:flex; }
 
 .left {
   flex:1;
@@ -50,14 +43,9 @@ body::before {
   cursor:pointer;
   transition:0.1s;
 }
+#cookieImg:active { transform:scale(0.9); }
 
-#cookieImg:active {
-  transform:scale(0.9);
-}
-
-.right {
-  width:280px;
-}
+.right { width:280px; }
 
 .right button {
   width:100%;
@@ -68,6 +56,7 @@ body::before {
 .number-pop {
   position:fixed;
   color:gold;
+  font-weight:bold;
   animation:pop 0.8s forwards;
 }
 @keyframes pop {
@@ -80,6 +69,7 @@ body::before {
   left:50%;
   transform:translateX(-50%);
   color:red;
+  font-size:24px;
 }
 </style>
 </head>
@@ -87,11 +77,9 @@ body::before {
 <body>
 
 <div class="container">
-  <div class="header">
-    <h2><span id="cookies">0</span> 大地</h2>
-    <p>毎秒: <span id="cps">0</span></p>
-    <p>倍率: x<span id="multiplier">1</span></p>
-  </div>
+  <h2><span id="cookies">0</span> 大地</h2>
+  <p>毎秒: <span id="cps">0</span></p>
+  <p>倍率: x<span id="multiplier">1</span></p>
 
   <div class="main">
     <div class="left">
@@ -111,7 +99,21 @@ body::before {
 </div>
 
 <script>
-// ===== セーブ読み込み =====
+// ===== 音 =====
+const CLICK_SOUND_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%82%EF%BD%9E%EF%BC%81.mp3";
+const BGM_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%94%E3%81%A8%E3%81%86%E3%81%A0%E3%81%84%E3%81%A1%E3%81%AE%E9%83%A8%E5%B1%8B%20(1).mp3";
+
+const bgm = new Audio(BGM_URL);
+bgm.loop = true;
+bgm.volume = 0.2;
+
+function playClick(){
+  const s = new Audio(CLICK_SOUND_URL);
+  s.volume = 0.2;
+  s.play();
+}
+
+// ===== データ（セーブ） =====
 let data = JSON.parse(localStorage.getItem("save")) || {
   cookies: 0,
   cps: 0,
@@ -132,14 +134,7 @@ const costGrandmaEl = document.getElementById("cost_grandma");
 const costFactoryEl = document.getElementById("cost_factory");
 const costClickEl = document.getElementById("cost_click");
 
-// ===== 音 =====
-const bgm = new Audio("https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%94%E3%81%A8%E3%81%86%E3%81%A0%E3%81%84%E3%81%A1%E3%81%AE%E9%83%A8%E5%B1%8B%20(1).mp3");
-bgm.loop = true;
-bgm.volume = 0.2;
-
-let started = false;
-
-// ===== UI更新 =====
+// ===== UI =====
 function updateUI(){
   cookiesEl.textContent = Math.floor(data.cookies);
   cpsEl.textContent = data.cps;
@@ -175,6 +170,8 @@ function pop(x,y,val){
 }
 
 // ===== クリック =====
+let started = false;
+
 cookieImg.onclick = (e)=>{
   combo++;
   comboEl.textContent = combo + " COMBO";
@@ -189,6 +186,7 @@ cookieImg.onclick = (e)=>{
   data.cookies += gain;
 
   pop(e.clientX,e.clientY,gain);
+  playClick();
 
   if(!started){
     bgm.play();
@@ -235,7 +233,6 @@ setInterval(()=>{
   updateUI();
 },100);
 
-// 初期化
 updateUI();
 </script>
 
