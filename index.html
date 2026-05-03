@@ -10,15 +10,7 @@ body {
   background: url("https://i.imgur.com/o2WgAe5.png") no-repeat center center fixed;
   background-size: cover;
   color: #fff;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-body::before {
-  content:"";
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.5);
-  backdrop-filter:blur(6px);
+  font-family: sans-serif;
 }
 
 .container {
@@ -26,50 +18,31 @@ body::before {
   margin: 20px auto;
   padding: 10px;
   background: rgba(0,0,0,0.6);
-  border-radius: 16px;
+  border-radius: 10px;
 }
 
-.main { display:flex; }
+.main {
+  display: flex;
+}
 
 .left {
-  flex:1;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  flex: 1;
+  text-align: center;
 }
 
 #cookieImg {
-  width:250px;
-  cursor:pointer;
-  transition:0.1s;
-}
-#cookieImg:active { transform:scale(0.9); }
-
-.right { width:280px; }
-
-.right button {
-  width:100%;
-  margin:5px 0;
-  padding:10px;
+  width: 200px;
+  cursor: pointer;
 }
 
-.number-pop {
-  position:fixed;
-  color:gold;
-  font-weight:bold;
-  animation:pop 0.8s forwards;
-}
-@keyframes pop {
-  to { transform:translateY(-50px); opacity:0; }
+.right {
+  width: 250px;
 }
 
-.combo {
-  position:fixed;
-  top:20%;
-  left:50%;
-  transform:translateX(-50%);
-  color:red;
-  font-size:24px;
+button {
+  width: 100%;
+  margin: 5px 0;
+  padding: 10px;
 }
 </style>
 </head>
@@ -100,20 +73,20 @@ body::before {
 
 <script>
 // ===== 音 =====
-const CLICK_SOUND_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%82%EF%BD%9E%EF%BC%81.mp3";
-const BGM_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%94%E3%81%A8%E3%81%86%E3%81%A0%E3%81%84%E3%81%A1%E3%81%AE%E9%83%A8%E5%B1%8B%20(1).mp3";
+const CLICK_SOUND = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%82%EF%BD%9E%EF%BC%81.mp3";
+const BGM = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%94%E3%81%A8%E3%81%86%E3%81%A0%E3%81%84%E3%81%A1%E3%81%AE%E9%83%A8%E5%B1%8B%20(1).mp3";
 
-const bgm = new Audio(BGM_URL);
+const bgm = new Audio(BGM);
 bgm.loop = true;
 bgm.volume = 0.2;
 
 function playClick(){
-  const s = new Audio(CLICK_SOUND_URL);
+  const s = new Audio(CLICK_SOUND);
   s.volume = 0.2;
   s.play();
 }
 
-// ===== データ（セーブ） =====
+// ===== セーブ =====
 let data = JSON.parse(localStorage.getItem("save")) || {
   cookies: 0,
   cps: 0,
@@ -146,51 +119,22 @@ function updateUI(){
   costClickEl.textContent = data.costs.click;
 }
 
-// ===== セーブ =====
+// ===== セーブ保存 =====
 setInterval(()=>{
   localStorage.setItem("save", JSON.stringify(data));
 },3000);
 
-// ===== コンボ =====
-let combo = 0;
-let comboTimer;
-const comboEl = document.createElement("div");
-comboEl.className = "combo";
-document.body.appendChild(comboEl);
-
-// ===== ポップ =====
-function pop(x,y,val){
-  const el=document.createElement("div");
-  el.className="number-pop";
-  el.textContent="+"+val;
-  el.style.left=x+"px";
-  el.style.top=y+"px";
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(),800);
-}
-
 // ===== クリック =====
 let started = false;
 
-cookieImg.onclick = (e)=>{
-  combo++;
-  comboEl.textContent = combo + " COMBO";
+cookieImg.onclick = ()=>{
+  data.cookies += data.clickPower * data.multiplier;
 
-  clearTimeout(comboTimer);
-  comboTimer=setTimeout(()=>{
-    combo=0;
-    comboEl.textContent="";
-  },1500);
-
-  const gain = Math.floor(data.clickPower * data.multiplier * (1+combo*0.1));
-  data.cookies += gain;
-
-  pop(e.clientX,e.clientY,gain);
   playClick();
 
   if(!started){
     bgm.play();
-    started=true;
+    started = true;
   }
 
   updateUI();
@@ -233,6 +177,7 @@ setInterval(()=>{
   updateUI();
 },100);
 
+// 初期化
 updateUI();
 </script>
 
