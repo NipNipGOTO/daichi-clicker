@@ -21,9 +21,7 @@ body {
   border-radius: 10px;
 }
 
-.main {
-  display: flex;
-}
+.main { display: flex; }
 
 .left {
   flex: 1;
@@ -35,14 +33,29 @@ body {
   cursor: pointer;
 }
 
-.right {
-  width: 250px;
-}
+.right { width: 250px; }
 
 button {
   width: 100%;
   margin: 5px 0;
   padding: 10px;
+}
+
+.number-pop {
+  position: fixed;
+  color: gold;
+  animation: pop 0.8s forwards;
+}
+@keyframes pop {
+  to { transform: translateY(-50px); opacity: 0; }
+}
+
+.combo {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: red;
 }
 </style>
 </head>
@@ -74,6 +87,7 @@ button {
 <script>
 // ===== 音 =====
 const CLICK_SOUND = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%82%EF%BD%9E%EF%BC%81.mp3";
+const REBIRTH_SOUND = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%82%AC%E3%83%81%E5%88%87%E3%82%8C%E5%BE%8C%E8%97%A4.mp3";
 const BGM = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%94%E3%81%A8%E3%81%86%E3%81%A0%E3%81%84%E3%81%A1%E3%81%AE%E9%83%A8%E5%B1%8B%20(1).mp3";
 
 const bgm = new Audio(BGM);
@@ -83,6 +97,12 @@ bgm.volume = 0.2;
 function playClick(){
   const s = new Audio(CLICK_SOUND);
   s.volume = 0.2;
+  s.play();
+}
+
+function playRebirth(){
+  const s = new Audio(REBIRTH_SOUND);
+  s.volume = 0.3;
   s.play();
 }
 
@@ -124,12 +144,41 @@ setInterval(()=>{
   localStorage.setItem("save", JSON.stringify(data));
 },3000);
 
+// ===== コンボ =====
+let combo = 0;
+let comboTimer;
+const comboEl = document.createElement("div");
+comboEl.className = "combo";
+document.body.appendChild(comboEl);
+
+// ===== ポップ =====
+function pop(x,y,val){
+  const el=document.createElement("div");
+  el.className="number-pop";
+  el.textContent="+"+val;
+  el.style.left=x+"px";
+  el.style.top=y+"px";
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),800);
+}
+
 // ===== クリック =====
 let started = false;
 
-cookieImg.onclick = ()=>{
-  data.cookies += data.clickPower * data.multiplier;
+cookieImg.onclick = (e)=>{
+  combo++;
+  comboEl.textContent = combo + " COMBO";
 
+  clearTimeout(comboTimer);
+  comboTimer=setTimeout(()=>{
+    combo=0;
+    comboEl.textContent="";
+  },1500);
+
+  const gain = Math.floor(data.clickPower * data.multiplier * (1+combo*0.1));
+  data.cookies += gain;
+
+  pop(e.clientX,e.clientY,gain);
   playClick();
 
   if(!started){
@@ -161,6 +210,8 @@ rebirthBtn.onclick = ()=>{
     alert("足りない！");
     return;
   }
+
+  playRebirth(); // 🔊 転生音
 
   data.multiplier += 1;
   data.cookies = 0;
