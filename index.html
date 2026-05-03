@@ -13,9 +13,30 @@ body {
   font-family: 'Segoe UI', sans-serif;
 }
 
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(6px);
+  z-index: 0;
+}
+
 .container {
   max-width: 900px;
   margin: 20px auto;
+  padding: 10px;
+  position: relative;
+  z-index: 1;
+  background: rgba(0,0,0,0.6);
+  border-radius: 16px;
+}
+
+.header {
+  text-align: center;
+  background: rgba(20,20,20,0.8);
+  padding: 10px;
+  border-radius: 12px;
 }
 
 .main {
@@ -24,16 +45,33 @@ body {
 
 .left {
   flex: 1;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #cookieImg {
   width: 250px;
   cursor: pointer;
+  transition: 0.1s;
+}
+
+#cookieImg:active {
+  transform: scale(0.9);
 }
 
 .right {
-  width: 250px;
+  width: 280px;
+}
+
+.right button {
+  width: 100%;
+  margin: 5px 0;
+  padding: 12px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 10px;
 }
 
 .number-pop {
@@ -46,15 +84,26 @@ body {
 @keyframes pop {
   to { transform: translateY(-50px); opacity: 0; }
 }
-</style>
 
+.combo {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: red;
+  font-size: 24px;
+}
+</style>
 </head>
+
 <body>
 
 <div class="container">
 
-  <h2><span id="cookies">0</span> 大地</h2>
-  <p>毎秒: <span id="cps">0</span></p>
+  <div class="header">
+    <h2><span id="cookies">0</span> 大地</h2>
+    <p>毎秒: <span id="cps">0</span></p>
+  </div>
 
   <div class="main">
     <div class="left">
@@ -67,14 +116,19 @@ body {
       <button onclick="buy('factory',20,1.3)">工場 <span id="cost_factory"></span></button>
       <button onclick="buy('click',1,1.5)">クリック強化 <span id="cost_click"></span></button>
     </div>
-
   </div>
+
 </div>
 
 <script>
-// ===== 設定 =====
 const CLICK_SOUND_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%82%EF%BD%9E%EF%BC%81.mp3";
 const BGM_URL = "https://raw.githubusercontent.com/NipNipGOTO/GOTOMP3/main/%E3%81%94%E3%81%A8%E3%81%86%E3%81%A0%E3%81%84%E3%81%A1%E3%81%AE%E9%83%A8%E5%B1%8B%20(1).mp3";
+
+const bgm = new Audio(BGM_URL);
+bgm.loop = true;
+bgm.volume = 0.2;
+
+let bgmStarted = false;
 
 let data = {
   cookies: 0,
@@ -87,28 +141,83 @@ const cookieImg = document.getElementById("cookieImg");
 const cookiesEl = document.getElementById("cookies");
 const cpsEl = document.getElementById("cps");
 
-function updateUI(){
-  cookiesEl.textContent = Math.floor(data.cookies);
-  cpsEl.textContent = data.cps;
+const costCursorEl = document.getElementById("cost_cursor");
+const costGrandmaEl = document.getElementById("cost_grandma");
+const costFactoryEl = document.getElementById("cost_factory");
+const costClickEl = document.getElementById("cost_click");
+
+let combo = 0;
+let comboTimer;
+const comboEl = document.createElement("div");
+comboEl.className = "combo";
+document.body.appendChild(comboEl);
+
+function playClick(){
+  const s=new Audio(CLICK_SOUND_URL);
+  s.volume=0.3;
+  s.play();
 }
 
-cookieImg.onclick = () => {
-  data.cookies += data.clickPower;
+function updateUI(){
+  cookiesEl.textContent=Math.floor(data.cookies);
+  cpsEl.textContent=data.cps;
+
+  costCursorEl.textContent=data.costs.cursor;
+  costGrandmaEl.textContent=data.costs.grandma;
+  costFactoryEl.textContent=data.costs.factory;
+  costClickEl.textContent=data.costs.click;
+}
+
+function pop(x,y,val){
+  const el=document.createElement("div");
+  el.className="number-pop";
+  el.textContent="+"+val;
+  el.style.left=x+"px";
+  el.style.top=y+"px";
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),800);
+}
+
+cookieImg.onclick=(e)=>{
+  combo++;
+  comboEl.textContent=combo+" COMBO";
+
+  clearTimeout(comboTimer);
+  comboTimer=setTimeout(()=>{
+    combo=0;
+    comboEl.textContent="";
+  },1500);
+
+  const gain=Math.floor(data.clickPower*(1+combo*0.1));
+  data.cookies+=gain;
+
+  pop(e.clientX,e.clientY,gain);
+
+  if(!bgmStarted){
+    bgm.play();
+    bgmStarted=true;
+  }
+
+  playClick();
   updateUI();
 };
 
-window.buy = function(type,gain,rate){
-  let cost = data.costs[type];
-  if(data.cookies >= cost){
-    data.cookies -= cost;
-    data.cps += gain;
-    data.costs[type] = Math.floor(cost * rate);
+window.buy=function(type,gain,rate){
+  let cost=data.costs[type];
+
+  if(data.cookies>=cost){
+    data.cookies-=cost;
+
+    if(type==="click"){data.clickPower+=gain;}
+    else{data.cps+=gain;}
+
+    data.costs[type]=Math.floor(cost*rate);
     updateUI();
   }
 };
 
 setInterval(()=>{
-  data.cookies += data.cps / 10;
+  data.cookies+=data.cps/10;
   updateUI();
 },100);
 
